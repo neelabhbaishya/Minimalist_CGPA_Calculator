@@ -154,7 +154,6 @@
             };
 
             themeToggle.addEventListener('click', toggleTheme);
-            // MODIFIED: Default theme is now dark
             applyTheme(localStorage.getItem('theme') || 'dark');
 
             // --- DOM Elements ---
@@ -210,7 +209,6 @@
                     calculators[key].classList.toggle('hidden', !isSelected);
                 });
 
-                // MODIFIED: Conditionally hide the university selector
                 if (tabName === 'marks') {
                     universitySelectorWrapper.classList.add('hidden');
                 } else {
@@ -252,7 +250,6 @@
                     return; 
                 }
                 const percentage = (obtained / total) * 100;
-                // MODIFIED: Only display percentage, no CGPA conversion
                 displayResults([`<strong>Percentage:</strong> ${percentage.toFixed(2)}%`]);
             });
 
@@ -319,20 +316,46 @@
             exportPdfBtn.addEventListener('click', () => {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                const pageWidth = doc.internal.pageSize.getWidth(), pageHeight = doc.internal.pageSize.getHeight();
-                doc.setFontSize(20); doc.setFont('helvetica', 'bold');
-                doc.text("Calculation Results", pageWidth / 2, 20, { align: 'center' });
-                doc.setFontSize(14); doc.setFont('helvetica', 'normal');
+                
+                const isDarkMode = docElement.classList.contains('dark');
+                const colors = {
+                    bg: isDarkMode ? '#111111' : '#FFFFFF',
+                    textPrimary: isDarkMode ? '#D8C9A4' : '#1f2937',
+                    textSecondary: isDarkMode ? '#888888' : '#6b7280'
+                };
+
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+
+                // Draw background
+                doc.setFillColor(colors.bg);
+                doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+                // Draw Title
+                doc.setFontSize(22);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(colors.textPrimary);
+                doc.text("Calculation Results", pageWidth / 2, 30, { align: 'center' });
+
+                // Draw Results
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'normal');
                 const resultLines = Array.from(resultsText.querySelectorAll('div')).map(div => div.innerText);
-                let yPos = 40;
-                resultLines.forEach(line => { doc.text(line, pageWidth / 2, yPos, { align: 'center' }); yPos += 10; });
+                let yPos = 50;
+                resultLines.forEach(line => {
+                    doc.text(line, pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 12;
+                });
+
+                // Draw Footer
+                doc.setFontSize(9);
+                doc.setTextColor(colors.textSecondary);
                 if (lastActiveTab !== 'marks') {
                     const universityFormula = universitySelect.options[universitySelect.selectedIndex].text;
-                    doc.setFontSize(9); doc.setTextColor(150);
-                    doc.text(`Calculation based on the formula: ${universityFormula}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
+                    doc.text(`Formula: ${universityFormula}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
                 }
-                doc.setFontSize(9); doc.setTextColor(150);
-                doc.text("Generated with Minimalist CGPA Calculator. (https://neelabhbaishya.github.io/Minimalist_CGPA_Calculator/)", pageWidth / 2, pageHeight - 15, { align: 'center' });
+                doc.text("Generated with Minimalist CGPA Calculator(https://neelabhbaishya.github.io/Minimalist_CGPA_Calculator/).", pageWidth / 2, pageHeight - 15, { align: 'center' });
+                
                 doc.save('cgpa_results.pdf');
             });
             
