@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Powered CGPA & Percentage Calculator</title>
+    <title>CGPA & Percentage Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -29,52 +29,29 @@
         .dark .input-field { background-color: #222; border-color: #444; color: var(--beige); }
         .dark .input-field::placeholder { color: #666; }
         .dark .btn-primary { background-color: var(--beige); color: var(--black); }
-        .dark .btn-primary-ai { background: linear-gradient(45deg, #D8C9A4, #b49d6a); color: var(--black); }
         .dark .btn-secondary { background-color: #222; color: var(--beige); border-color: #444; }
-        .dark .tab-active { border-color: var(--beige); background-color: #222; font-weight: 600; }
+        .dark .tab-active { border-color: var(--beige); background-color: #222; font-weight: 600; color: var(--beige); }
+        .dark .tab-inactive { color: #888; }
         .dark .results-card { background-color: #1a1a1a; }
-        .dark .modal-content { background-color: #1a1a1a; }
 
         /* Light Mode */
-        body { background-color: var(--white); color: var(--dark-gray); }
-        .main-card { background-color: var(--white); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.05); }
-        .text-main { color: var(--dark-gray); }
-        .text-secondary { color: #6b7280; }
-        .text-header { color: #111827; }
-        .input-field { background-color: var(--white); border-color: #D1D5DB; color: var(--dark-gray); }
-        .input-field:focus { border-color: var(--dark-gray); ring-color: var(--dark-gray); }
-        .input-field::placeholder { color: #9CA3AF; }
-        .btn-primary { background-color: var(--dark-gray); color: var(--white); }
-        .btn-primary-ai { background: linear-gradient(45deg, #374151, #111827); color: var(--white); }
-        .btn-secondary { background-color: var(--white); color: var(--dark-gray); border-color: #D1D5DB; }
-        .tab-active { border-color: var(--dark-gray); background-color: var(--off-white); font-weight: 600; }
-        .results-card { background-color: var(--off-white); }
-        .modal-content { background-color: var(--white); }
+        .light body { background-color: var(--white); color: var(--dark-gray); }
+        .light .main-card { background-color: var(--white); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.05); }
+        .light .text-main { color: var(--dark-gray); }
+        .light .text-secondary { color: #6b7280; }
+        .light .text-header { color: #111827; }
+        .light .input-field { background-color: var(--white); border-color: #D1D5DB; color: var(--dark-gray); }
+        .light .input-field:focus { border-color: var(--dark-gray); ring-color: var(--dark-gray); }
+        .light .input-field::placeholder { color: #9CA3AF; }
+        .light .btn-primary { background-color: var(--dark-gray); color: var(--white); }
+        .light .btn-secondary { background-color: var(--white); color: var(--dark-gray); border-color: #D1D5DB; }
+        .light .tab-active { border-color: var(--dark-gray); background-color: var(--off-white); font-weight: 600; color: var(--dark-gray); }
+        .light .tab-inactive { color: #6b7280; }
+        .light .results-card { background-color: var(--off-white); }
         
         .tab-inactive { border-color: transparent; }
         .btn { transition: all 0.2s ease; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
-
-        /* Modal Styles */
-        .modal {
-            transition: opacity 0.25s ease;
-        }
-        .modal-content {
-            transition: all 0.25s ease;
-        }
-        .spinner {
-            border-top-color: var(--beige);
-            animation: spin 1s linear infinite;
-        }
-        .dark .spinner {
-            border-top-color: var(--beige);
-        }
-        .light .spinner {
-            border-top-color: var(--dark-gray);
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -89,8 +66,8 @@
         </header>
 
         <div class="main-card rounded-xl p-4 sm:p-6 md:p-8">
-            <!-- University Conversion Formula Selector -->
-            <div class="mb-6">
+            <!-- University Conversion Formula Selector (conditionally hidden) -->
+            <div id="university-selector-wrapper" class="mb-6">
                 <label for="university" class="block text-sm font-medium text-main mb-2">Select University Conversion Formula:</label>
                 <select id="university" class="input-field w-full p-3 border rounded-lg focus:ring-2 dark:focus:ring-beige dark:focus:border-beige">
                     <option value="9.5">CGPA × 9.5 (CBSE, Central Universities)</option>
@@ -114,7 +91,16 @@
             <div id="calculator-sections">
                 <!-- Marks-Based Calculator -->
                 <div id="marks-calculator">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><label class="block text-sm font-medium text-main">Total Marks Obtained</label><input type="number" id="marks-obtained" class="input-field mt-1 block w-full p-3 border rounded-lg shadow-sm" placeholder="e.g., 850"><label class="block text-sm font-medium text-main">Total Maximum Marks</label><input type="number" id="marks-total" class="input-field mt-1 block w-full p-3 border rounded-lg shadow-sm" placeholder="e.g., 1000"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-main">Total Marks Obtained</label>
+                            <input type="number" id="marks-obtained" class="input-field mt-1 block w-full p-3 border rounded-lg shadow-sm" placeholder="e.g., 850">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-main">Total Maximum Marks</label>
+                            <input type="number" id="marks-total" class="input-field mt-1 block w-full p-3 border rounded-lg shadow-sm" placeholder="e.g., 1000">
+                        </div>
+                    </div>
                     <div class="mt-6 flex justify-center"><button id="calculate-marks" class="btn btn-primary font-bold py-3 px-6 rounded-lg">Calculate</button></div>
                 </div>
 
@@ -129,7 +115,6 @@
                     <div id="subjects-container" class="space-y-4"></div>
                     <div class="mt-6 flex flex-wrap gap-4 justify-between items-center">
                         <button id="add-subject" class="btn btn-secondary font-bold py-2 px-4 rounded-lg border">Add Subject</button>
-                        <button id="generate-study-plan" class="btn btn-primary-ai font-bold py-2 px-4 rounded-lg">✨ Generate Study Plan</button>
                         <button id="calculate-grades" class="btn btn-primary font-bold py-3 px-6 rounded-lg">Calculate CGPA</button>
                     </div>
                 </div>
@@ -142,26 +127,11 @@
                 <div class="mt-6 flex flex-wrap justify-center items-center gap-4">
                     <button id="copy-results-btn" class="btn btn-secondary font-bold py-2 px-4 rounded-lg border">Copy</button>
                     <button id="export-pdf" class="btn btn-secondary font-bold py-2 px-4 rounded-lg border">Export as PDF</button>
-                    <button id="get-insights-btn" class="btn btn-primary-ai font-bold py-2 px-4 rounded-lg hidden">✨ Get Performance Insights</button>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Gemini Modal -->
-    <div id="gemini-modal" class="modal fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4 hidden opacity-0">
-        <div class="modal-content w-full max-w-2xl max-h-[90vh] rounded-lg shadow-xl p-6 relative transform scale-95">
-            <h3 id="gemini-modal-title" class="text-2xl font-bold text-header mb-4">AI-Generated Response</h3>
-            <button id="close-gemini-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">&times;</button>
-            <div id="gemini-modal-body" class="prose dark:prose-invert max-w-none max-h-[70vh] overflow-y-auto text-main pr-4">
-                <div id="gemini-spinner" class="flex justify-center items-center h-48">
-                    <div class="spinner w-12 h-12 rounded-full border-4 border-gray-300"></div>
-                </div>
-                <div id="gemini-response-content"></div>
-            </div>
-        </div>
-    </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // --- Theme Management ---
@@ -184,9 +154,11 @@
             };
 
             themeToggle.addEventListener('click', toggleTheme);
-            applyTheme(localStorage.getItem('theme') || 'light');
+            // MODIFIED: Default theme is now dark
+            applyTheme(localStorage.getItem('theme') || 'dark');
 
             // --- DOM Elements ---
+            const universitySelectorWrapper = document.getElementById('university-selector-wrapper');
             const universitySelect = document.getElementById('university');
             const tabs = { marks: document.getElementById('tab-marks'), cgpa: document.getElementById('tab-cgpa'), grades: document.getElementById('tab-grades') };
             const calculators = { marks: document.getElementById('marks-calculator'), cgpa: document.getElementById('cgpa-calculator'), grades: document.getElementById('grades-calculator') };
@@ -194,89 +166,11 @@
             const resultsText = document.getElementById('results-text');
             const copyBtn = document.getElementById('copy-results-btn');
             const exportPdfBtn = document.getElementById('export-pdf');
-            const insightsBtn = document.getElementById('get-insights-btn');
-            const studyPlanBtn = document.getElementById('generate-study-plan');
-            const geminiModal = document.getElementById('gemini-modal');
-            const geminiModalTitle = document.getElementById('gemini-modal-title');
-            const geminiModalBody = document.getElementById('gemini-modal-body');
-            const geminiSpinner = document.getElementById('gemini-spinner');
-            const geminiResponseContent = document.getElementById('gemini-response-content');
-            const closeGeminiModalBtn = document.getElementById('close-gemini-modal');
 
             // --- Grade Data ---
             const gradePoints = { 'O': 10, 'A+': 9, 'A': 8, 'B+': 7, 'B': 6, 'C': 5, 'P': 4, 'F': 0 };
             let subjectCount = 0;
             let lastActiveTab = 'marks';
-            let lastCalculationResult = {};
-
-            // --- Gemini API ---
-            const API_KEY = ""; // Kept empty as per instructions
-            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
-            
-            async function callGemini(prompt) {
-                showGeminiModal();
-                try {
-                    const payload = {
-                        contents: [{ role: "user", parts: [{ text: prompt }] }],
-                        generationConfig: {
-                            temperature: 0.7,
-                            topP: 0.9,
-                        }
-                    };
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`API Error: ${response.statusText}`);
-                    }
-
-                    const result = await response.json();
-                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) {
-                        geminiResponseContent.innerHTML = formatGeminiResponse(text);
-                    } else {
-                        geminiResponseContent.innerHTML = "Sorry, I couldn't generate a response. Please try again.";
-                    }
-                } catch (error) {
-                    console.error("Gemini API call failed:", error);
-                    geminiResponseContent.innerHTML = `An error occurred. Please check the console for details.`;
-                } finally {
-                    geminiSpinner.classList.add('hidden');
-                }
-            }
-            
-            function formatGeminiResponse(text) {
-                return text
-                    .replace(/## (.*)/g, '<h3 class="text-xl font-bold mt-4 mb-2">$1</h3>')
-                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\* (.*)/g, '<li class="ml-4">$1</li>')
-                    .replace(/\n/g, '<br>');
-            }
-
-            // --- Modal ---
-            function showGeminiModal(title = "AI is thinking...") {
-                geminiModalTitle.textContent = title;
-                geminiSpinner.classList.remove('hidden');
-                geminiResponseContent.innerHTML = '';
-                geminiModal.classList.remove('hidden');
-                setTimeout(() => {
-                    geminiModal.classList.remove('opacity-0');
-                    geminiModal.querySelector('.modal-content').classList.remove('scale-95');
-                }, 10);
-            }
-
-            function hideGeminiModal() {
-                geminiModal.classList.add('opacity-0');
-                geminiModal.querySelector('.modal-content').classList.add('scale-95');
-                setTimeout(() => geminiModal.classList.add('hidden'), 250);
-            }
-            closeGeminiModalBtn.addEventListener('click', hideGeminiModal);
-            geminiModal.addEventListener('click', (e) => {
-                if (e.target === geminiModal) hideGeminiModal();
-            });
 
             // --- Local Storage ---
             const saveData = () => {
@@ -315,9 +209,16 @@
                     tabs[key].classList.toggle('tab-inactive', !isSelected);
                     calculators[key].classList.toggle('hidden', !isSelected);
                 });
+
+                // MODIFIED: Conditionally hide the university selector
+                if (tabName === 'marks') {
+                    universitySelectorWrapper.classList.add('hidden');
+                } else {
+                    universitySelectorWrapper.classList.remove('hidden');
+                }
+
                 lastActiveTab = tabName;
                 resultsContainer.classList.add('hidden');
-                insightsBtn.classList.add('hidden');
                 saveData();
             };
             Object.keys(tabs).forEach(key => tabs[key].addEventListener('click', () => switchTab(key)));
@@ -334,61 +235,52 @@
                     default: return cgpa * 9.5;
                 }
             };
-
-            const calculateCgpaFromPercentage = (percentage) => {
-                const formula = universitySelect.value;
-                percentage = parseFloat(percentage);
-                if (isNaN(percentage)) return NaN;
-                switch (formula) {
-                    case '10': return percentage / 10;
-                    case 'DU': return (percentage / 10) + 0.5;
-                    case 'Mumbai': return (percentage + 7.5) / 10;
-                    case '9.2': return percentage / 9.2;
-                    default: return percentage / 9.5;
-                }
-            };
             
-            const displayResults = (lines, showInsights = false) => {
+            const displayResults = (lines) => {
                 resultsText.innerHTML = lines.map(line => `<div>${line}</div>`).join('');
                 resultsContainer.classList.remove('hidden');
-                insightsBtn.classList.toggle('hidden', !showInsights);
                 resultsContainer.scrollIntoView({ behavior: 'smooth' });
                 saveData();
             };
 
             // --- Calculation Event Listeners ---
             document.getElementById('calculate-marks').addEventListener('click', () => {
-                const obtained = parseFloat(document.getElementById('marks-obtained').value), total = parseFloat(document.getElementById('marks-total').value);
-                if (isNaN(obtained) || isNaN(total) || total <= 0 || obtained > total || obtained < 0) { displayResults(['Error: Please enter valid, non-negative marks.']); return; }
+                const obtained = parseFloat(document.getElementById('marks-obtained').value);
+                const total = parseFloat(document.getElementById('marks-total').value);
+                if (isNaN(obtained) || isNaN(total) || total <= 0 || obtained > total || obtained < 0) { 
+                    displayResults(['<span class="text-red-500">Error: Please enter valid marks.</span>']); 
+                    return; 
+                }
                 const percentage = (obtained / total) * 100;
-                const cgpa = calculateCgpaFromPercentage(percentage);
-                lastCalculationResult = { percentage: percentage.toFixed(2), cgpa: cgpa.toFixed(2) };
-                displayResults([`<strong>Percentage:</strong> ${lastCalculationResult.percentage}%`, `<strong>Calculated CGPA:</strong> ${lastCalculationResult.cgpa}`]);
+                // MODIFIED: Only display percentage, no CGPA conversion
+                displayResults([`<strong>Percentage:</strong> ${percentage.toFixed(2)}%`]);
             });
 
             document.getElementById('calculate-cgpa').addEventListener('click', () => {
                 const cgpa = parseFloat(document.getElementById('cgpa-input').value);
-                if (isNaN(cgpa) || cgpa < 0 || cgpa > 10) { displayResults(['Error: Please enter a valid CGPA (0-10).']); return; }
+                if (isNaN(cgpa) || cgpa < 0 || cgpa > 10) { 
+                    displayResults(['<span class="text-red-500">Error: Please enter a valid CGPA (0-10).</span>']); 
+                    return; 
+                }
                 const percentage = calculatePercentageFromCgpa(cgpa);
-                lastCalculationResult = { cgpa: cgpa.toFixed(2), percentage: percentage.toFixed(2) };
-                displayResults([`<strong>CGPA:</strong> ${lastCalculationResult.cgpa}`, `<strong>Calculated Percentage:</strong> ${lastCalculationResult.percentage}%`]);
+                displayResults([`<strong>CGPA:</strong> ${cgpa.toFixed(2)}`, `<strong>Calculated Percentage:</strong> ${percentage.toFixed(2)}%`]);
             });
 
             document.getElementById('calculate-grades').addEventListener('click', () => {
                 let totalCredits = 0, weightedGradePoints = 0, error = false;
-                const subjects = [];
                 document.querySelectorAll('.subject-row').forEach(row => {
-                    const name = row.querySelector('.subject-name').value;
                     const grade = row.querySelector('.subject-grade').value;
                     const credits = parseFloat(row.querySelector('.subject-credits').value);
                     if (isNaN(credits) || credits <= 0) { error = true; } 
-                    else { totalCredits += credits; weightedGradePoints += gradePoints[grade] * credits; subjects.push({ name, grade, credits }); }
+                    else { totalCredits += credits; weightedGradePoints += gradePoints[grade] * credits; }
                 });
-                if (error || totalCredits <= 0) { displayResults(['Error: Please enter valid, positive credits for all subjects.']); return; }
+                if (error || totalCredits <= 0) { 
+                    displayResults(['<span class="text-red-500">Error: Please enter valid credits for all subjects.</span>']); 
+                    return; 
+                }
                 const cgpa = weightedGradePoints / totalCredits;
                 const percentage = calculatePercentageFromCgpa(cgpa);
-                lastCalculationResult = { cgpa: cgpa.toFixed(2), percentage: percentage.toFixed(2), subjects };
-                displayResults([`<strong>Calculated CGPA:</strong> ${lastCalculationResult.cgpa}`, `<strong>Calculated Percentage:</strong> ${lastCalculationResult.percentage}%`], true);
+                displayResults([`<strong>Calculated CGPA:</strong> ${cgpa.toFixed(2)}`, `<strong>Calculated Percentage:</strong> ${percentage.toFixed(2)}%`]);
             });
 
             // --- Dynamic Subjects ---
@@ -406,32 +298,7 @@
             };
             document.getElementById('add-subject').addEventListener('click', () => addSubject());
 
-            // --- Utilities & AI Buttons ---
-            insightsBtn.addEventListener('click', () => {
-                if (!lastCalculationResult.subjects) return;
-                const subjectDetails = lastCalculationResult.subjects.map(s => `${s.name} (Credits: ${s.credits}, Grade: ${s.grade})`).join(', ');
-                const prompt = `You are an encouraging academic advisor. A student has a CGPA of ${lastCalculationResult.cgpa} and a percentage of ${lastCalculationResult.percentage}%. Their subject-wise performance is: ${subjectDetails}. 
-                Based on this, provide a brief, positive analysis of their performance. Highlight their strengths. Then, offer 2-3 concrete, actionable study tips to help them improve, especially in subjects where their grades are lower. Keep the tone supportive and motivational. Format the output using Markdown with headings like '## Strengths' and '## Suggestions for Improvement'.`;
-                showGeminiModal("Generating Performance Insights...");
-                callGemini(prompt);
-            });
-
-            studyPlanBtn.addEventListener('click', () => {
-                const subjects = Array.from(document.querySelectorAll('.subject-row')).map(row => {
-                    const name = row.querySelector('.subject-name').value;
-                    const credits = row.querySelector('.subject-credits').value;
-                    return (name && credits) ? `${name} (${credits} credits)` : null;
-                }).filter(Boolean);
-
-                if (subjects.length === 0) {
-                    alert("Please add at least one subject with credits to generate a study plan.");
-                    return;
-                }
-                const prompt = `You are an expert student planner. Create a balanced weekly study plan for a university student taking these subjects: ${subjects.join(', ')}. Allocate study time based on the credit value of each subject (higher credits need more time). The plan should be a simple table for Monday to Friday, with 1-2 subjects per day. Include a short motivational tip at the end. Format the output as Markdown.`;
-                showGeminiModal("Generating Your Study Plan...");
-                callGemini(prompt);
-            });
-
+            // --- Utilities ---
             copyBtn.addEventListener('click', () => {
                 const textToCopy = Array.from(resultsText.querySelectorAll('div')).map(div => div.innerText).join('\n');
                 const textarea = document.createElement('textarea');
@@ -459,9 +326,12 @@
                 const resultLines = Array.from(resultsText.querySelectorAll('div')).map(div => div.innerText);
                 let yPos = 40;
                 resultLines.forEach(line => { doc.text(line, pageWidth / 2, yPos, { align: 'center' }); yPos += 10; });
-                const universityFormula = universitySelect.options[universitySelect.selectedIndex].text;
+                if (lastActiveTab !== 'marks') {
+                    const universityFormula = universitySelect.options[universitySelect.selectedIndex].text;
+                    doc.setFontSize(9); doc.setTextColor(150);
+                    doc.text(`Calculation based on the formula: ${universityFormula}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
+                }
                 doc.setFontSize(9); doc.setTextColor(150);
-                doc.text(`Calculation based on the formula: ${universityFormula}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
                 doc.text("Generated with Minimalist CGPA Calculator.", pageWidth / 2, pageHeight - 15, { align: 'center' });
                 doc.save('cgpa_results.pdf');
             });
